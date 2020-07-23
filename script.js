@@ -6,7 +6,7 @@ function startGame() {
         bricks.push([]);
         for (let y = 0; y < 20; y++) {
             bricks[x].push(new Sprite(50, 50, `${colors[Math.floor(Math.random() * colors.length)]}`, x * 50, y * 50))
-            bricks[x][y].accelerationY = 0.1;
+            bricks[x][y].accelerationY = 0;
         }
     }
 
@@ -55,6 +55,7 @@ class Sprite {
 
     move() {
         if (this.emptyBelow) {
+            this.speedY = 10;
             this.speedX = this.speedX + this.accelerationX;
             this.speedY = this.speedY + this.accelerationY;
             this.x = this.x + this.speedX;
@@ -65,34 +66,38 @@ class Sprite {
         }
     };
 
-    destroy(n, e, s, w) {
+    destroy() {
+        if (this.visible) {
         this.visible = false;
+             for (let row of bricks) {
+                for (let brick of row) {
+                    if (brick.x + brick.width === this.x && brick.y === this.y && brick.color === this.color
+                    || brick.x - brick.width === this.x && brick.y === this.y && brick.color === this.color
+                    || brick.x === this.x && brick.y + brick.height === this.y && brick.color === this.color
+                    || brick.x === this.x && brick.y - brick.height === this.y && brick.color === this.color) {
+                        brick.destroy();
+                    }
+                }
+             }
 
-        console.log((n.toString() + e.toString() + s.toString() + w.toString()));
-
-
-        if (s && bricks[(this.x/this.width)][(this.y/this.height)+1].color === this.color) {
-            bricks[(this.x/this.width)][(this.y/this.height)+1].destroy(false, true, true, true)
         }
+    }
 
-
-        if (n && bricks[(this.x/this.width)][(this.y/this.height)-1].color === this.color) {
-            bricks[(this.x/this.width)][(this.y/this.height)-1].destroy(true, true, false, true)
+    initiateDestroy () {
+        for (let row of bricks) {
+            for (let brick of row) {
+                if (brick.x + brick.width === this.x && brick.y === this.y && brick.color === this.color
+                || brick.x - brick.width === this.x && brick.y === this.y && brick.color === this.color
+                || brick.x === this.x && brick.y + brick.height === this.y && brick.color === this.color
+                || brick.x === this.x && brick.y - brick.height === this.y && brick.color === this.color) {
+                    this.destroy()
+                }
+            }
         }
-
-
-        if (e && bricks[(this.x/this.width)+1][(this.y/this.height)].color === this.color) {
-            bricks[(this.x/this.width)+1][(this.y/this.height)].destroy(true, true, true, false)
-        }
-
-        /*
-        if (w && bricks[(this.x/this.width)-1][(this.y/this.height)].color === this.color) {
-            bricks[(this.x/this.width)-1][(this.y/this.height)].destroy(true, false, true, true)
-        }*/
     }
 
     checkEmptyBelow() {
-        this.emptyBelow = (myGameArea.context.getImageData(this.x, this.y+this.height+2, 1, 1).data.toString() === "255,255,255,255")
+        this.emptyBelow = (myGameArea.context.getImageData(this.x, this.y+this.height, 1, 1).data.toString() === "255,255,255,255")
     }
 
     update() {
@@ -107,17 +112,17 @@ class Sprite {
 }
 
 function updateGameArea() {
-    for (let row of bricks) {
-        for (let brick of row) {
-            brick.checkEmptyBelow();
-        }
-    }
+
     myGameArea.clear();
     myGameArea.context.fillStyle = "white";
     myGameArea.context.fillRect(0,0, myGameArea.canvas.width, myGameArea.canvas.height);
     for (let row of bricks) {
         for (let brick of row) {
             brick.update();
+        }
+    }for (let row of bricks) {
+        for (let brick of row) {
+            brick.checkEmptyBelow();
         }
     }
 }
@@ -130,7 +135,7 @@ function getMousePosition(canvas, event) {
     for (let row of bricks) {
         for (let brick of row) {
             if (brick.x <= x && brick.x+brick.width >= x && brick.y <= y && brick.y+brick.height >= y) {
-                brick.destroy(true, true, true, true)
+                brick.initiateDestroy()
             }
         }
     }
