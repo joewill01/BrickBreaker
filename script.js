@@ -1,5 +1,6 @@
 var bricks = [];
 var colors = ["red", "green", "blue", "yellow"];
+var frames = 0;
 
 function startGame() {
     for (let x = 0; x < 20; x++) {
@@ -20,7 +21,8 @@ var myGameArea = {
         this.canvas.height = 700;
         this.context = this.canvas.getContext("2d");
         document.body.insertBefore(this.canvas, document.body.childNodes[0]);
-        this.interval = setInterval(updateGameArea, 20);
+        requestAnimationFrame(updateGameArea);
+        setInterval(fpsCount, 1000);
     },
     clear : function() {
         this.context.clearRect(0, 0, this.canvas.width, this.canvas.height);
@@ -112,7 +114,6 @@ class Sprite {
 }
 
 function updateGameArea() {
-
     myGameArea.clear();
     myGameArea.context.fillStyle = "white";
     myGameArea.context.fillRect(0,0, myGameArea.canvas.width, myGameArea.canvas.height);
@@ -125,6 +126,13 @@ function updateGameArea() {
             brick.checkEmptyBelow();
         }
     }
+    frames++;
+    requestAnimationFrame(updateGameArea);
+}
+
+function fpsCount () {
+    document.getElementById("fps").innerText = `FPS: ${frames}`;
+    frames = 0;
 }
 
 function getMousePosition(canvas, event) {
